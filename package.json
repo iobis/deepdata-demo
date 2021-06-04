@@ -1,0 +1,10 @@
+{
+  "name": "deepdata-demo",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "run": "http-server"
+  },
+  "author": "Pieter Provoost",
+  "license": "MIT"
+}

@@ -1,0 +1,194 @@
+<!doctype html>
+<html>
+<head>
+<title>DeepData demo</title>
+<style>
+html, body {
+    padding: 0px;
+    margin: 0px;
+    height: 100%;
+    width: 100%;
+}
+#map {
+    position: fixed;
+    background-color: #fafafa;
+    margin-top: 49px;
+    height: calc(100%-49px);
+    width: 100%;
+    height: 100%;
+}
+#info {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+    padding: 14px;
+}
+#header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 2000;
+    padding-left: 14px;
+    height: 50px;
+    width: 100%;
+    background-color: #ffffff;
+}
+#datasets {
+    position: fixed;
+    top: 50px;
+    left: 0;
+    z-index: 1000;
+    padding: 14px;
+}
+h2 {
+    line-height: 50px;
+    font-size: 1.3em !important;
+}
+</style>
+<link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/1.13.1/mapbox-gl.css">
+</head>
+<body>
+
+<div id="map"></div>
+<div id="info"></div>
+<div id="datasets"></div>
+<div id="header"><h2><a href="#">DeepData demo</a></h2></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/1.13.1/mapbox-gl.js"></script>
+<script>
+
+mapboxgl.accessToken = "pk.eyJ1IjoicGlldGVycHJvdm9vc3QiLCJhIjoiY2o1bnJmaHE5MTAwMjMycXM4YmFkcWZnZSJ9.19SNmHoy6yZIPCBKwdf7Iw";
+
+const map = new mapboxgl.Map({
+    container: "map",
+    zoom: 1,
+    center: [20, 0],
+    style: "mapbox://styles/pieterprovoost/ckpiqgkhk3h4q18m4r8csqneg"
+});
+
+map.on("load", function() {
+
+    map.addSource("background", {
+        "type": "raster",
+        "tiles": [
+            "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png"
+        ],
+        "tileSize": 256
+    });
+
+    /*map.addLayer({
+        "id": "background",
+        "type": "raster",
+        "source": "background",
+        "paint": {
+            "raster-fade-duration": 100
+        }
+    });*/
+
+    ["apei"].map(key => {
+        map.addSource(key, {
+            type: "geojson",
+            data: "geojson/" + key + ".geojson"
+        });
+        map.addLayer({
+            "id": key,
+            "type": "fill",
+            "source": key,
+            "paint": {
+                "fill-opacity": 0.3,
+                "fill-color": "#E59500"
+            }
+        });
+        map.on("mousemove", key, showFeatures);
+    });
+
+    ["pmn_exploration", "pms_exploration", "cfc_exploration"].map(key => {
+        map.addSource(key, {
+            type: "geojson",
+            data: "geojson/" + key + ".geojson"
+        });
+        map.addLayer({
+            "id": key,
+            "type": "fill",
+            "source": key,
+            "paint": {
+                "fill-opacity": 0.6,
+                "fill-color": "#E59500"
+            }
+        });
+        map.on("mousemove", key, showFeatures);
+    });
+
+    ["pmn_reserved", "cfc_reserved"].map(key => {
+        map.addSource(key, {
+            type: "geojson",
+            data: "geojson/" + key + ".geojson"
+        });
+        map.addLayer({
+            "id": key,
+            "type": "fill",
+            "source": key,
+            "paint": {
+                "fill-opacity": 0.4,
+                "fill-color": "#E59500"
+            }
+        });
+        map.on("mousemove", key, showFeatures);
+    });
+
+    map.addSource("obis", {
+        "type": "vector",
+        "tiles": [ "https://api.obis.org/occurrence/tile/{x}/{y}/{z}.mvt?nodeid=9d2d95be-32eb-4d81-8911-32cb8bc641c8&keepKeys=true&grid=geotile" ]
+    });
+
+    map.addLayer({
+        "id": "obis",
+        "type": "fill",
+        "source": "obis",
+        "source-layer": "grid",
+        "paint": {
+            "fill-color": "#33cc00",
+            "fill-opacity": 0.4
+        }
+    });
+
+});
+
+map.addControl(new mapboxgl.NavigationControl());
+
+function showFeatures(e) {
+    const features = map.queryRenderedFeatures(e.point).filter(f => f.source !== "obis").map(f => f.properties);
+    document.getElementById("info").innerHTML = features && features.length > 0 ? JSON.stringify(features[0], null, 2) : "";
+}
+
+map.on("mousemove", "obis", function () {
+    map.getCanvas().style.cursor = "pointer";
+});
+
+map.on("mouseleave", "obis", function () {
+    map.getCanvas().style.cursor = "";
+});
+
+map.on("click", "obis", function(e) {
+    const features = map.queryRenderedFeatures(e.point).filter(f => f.source == "obis");
+    if (features && features.length > 0) {
+        const geom = features[0].properties.key;
+        const fetchData = async () => {
+            const res = await fetch("https://api.obis.org/dataset?nodeid=9d2d95be-32eb-4d81-8911-32cb8bc641c8&geometry=" + geom);
+            const data = await res.json();
+            if (data && data.results && data.results.length > 0) {
+                const links = data.results.map(dataset => {
+                    return "<li><a href=\"https://obis.org/dataset/" + dataset.id + "\" target=\"_blank\">" + dataset.title + "</a></li>"
+                });
+                document.getElementById("datasets").innerHTML = "<ul>" + links.join("") + "</ul>";
+            }
+        }
+        fetchData();
+    }
+});
+
+</script>
+</body>
+</html>
