@@ -73,7 +73,7 @@ mapboxgl.accessToken = "pk.eyJ1IjoicGlldGVycHJvdm9vc3QiLCJhIjoiY2o1bnJmaHE5MTAwM
 const map = new mapboxgl.Map({
     container: "map",
     zoom: 1,
-    center: [20, 0],
+    center: [0, 0],
     style: "mapbox://styles/pieterprovoost/ckpiqgkhk3h4q18m4r8csqneg"
 });
 
@@ -106,8 +106,8 @@ map.on("load", function() {
             "type": "fill",
             "source": key,
             "paint": {
-                "fill-opacity": 0.3,
-                "fill-color": "#E59500"
+                "fill-opacity": 0.2,
+                "fill-color": "#990000"
             }
         });
         map.on("mousemove", key, showFeatures);
@@ -140,8 +140,8 @@ map.on("load", function() {
             "type": "fill",
             "source": key,
             "paint": {
-                "fill-opacity": 0.4,
-                "fill-color": "#E59500"
+                "fill-opacity": 0.6,
+                "fill-color": "#ffcc00"
             }
         });
         map.on("mousemove", key, showFeatures);
