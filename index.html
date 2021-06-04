@@ -30,6 +30,7 @@ html, body {
     left: 0;
     z-index: 2000;
     padding-left: 14px;
+    padding-right: 14px;
     height: 50px;
     width: 100%;
     background-color: #ffffff;
@@ -44,6 +45,11 @@ html, body {
 h2 {
     line-height: 50px;
     font-size: 1.3em !important;
+    float: left;
+}
+#source {
+    float: right;
+    line-height: 50px;
 }
 </style>
 <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
@@ -54,7 +60,10 @@ h2 {
 <div id="map"></div>
 <div id="info"></div>
 <div id="datasets"></div>
-<div id="header"><h2><a href="#">DeepData demo</a></h2></div>
+<div id="header">
+    <h2><a href="#">DeepData demo</a></h2>
+    <div id="source"><a href="https://github.com/iobis/deepdata-demo" target="_blank">source</div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/1.13.1/mapbox-gl.js"></script>
 <script>
